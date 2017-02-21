@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import datetime
+from copy import copy
 from itertools import islice
 
 import bottlenose
@@ -516,7 +516,7 @@ class AmazonSearch(object):
     A class providing an iterable over amazon search results.
     """
 
-    def __init__(self, api, aws_associate_tag, **kwargs):
+    def __init__(self, api, aws_associate_tag, current_page=0,  **kwargs):
         """Initialise
 
         Initialise a search
@@ -526,8 +526,12 @@ class AmazonSearch(object):
         :param aws_associate_tag:
             An string representing an Amazon Associates tag.
         """
-        self.kwargs = kwargs
-        self.current_page = 0
+
+        self.kwargs = copy(kwargs)
+
+        if 'ItemPage' not in kwargs:
+            self.kwargs['ItemPage'] = 0
+
         self.is_last_page = False
         self.api = api
         self.aws_associate_tag = aws_associate_tag
@@ -557,8 +561,8 @@ class AmazonSearch(object):
         """
         try:
             while not self.is_last_page:
-                self.current_page += 1
-                yield self._query(ItemPage=self.current_page, **self.kwargs)
+                self.kwargs['ItemPage'] += 1
+                yield self._query(**self.kwargs)
         except NoMorePages:
             pass
 
