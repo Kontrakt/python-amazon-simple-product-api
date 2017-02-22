@@ -516,7 +516,7 @@ class AmazonSearch(object):
     A class providing an iterable over amazon search results.
     """
 
-    def __init__(self, api, aws_associate_tag, current_page=0,  **kwargs):
+    def __init__(self, api, aws_associate_tag, **kwargs):
         """Initialise
 
         Initialise a search
@@ -531,6 +531,8 @@ class AmazonSearch(object):
 
         if 'ItemPage' not in kwargs:
             self.kwargs['ItemPage'] = 0
+        else:
+            self.kwargs['ItemPage'] = kwargs['ItemPage'] - 1
 
         self.is_last_page = False
         self.api = api
@@ -564,6 +566,7 @@ class AmazonSearch(object):
                 self.kwargs['ItemPage'] += 1
                 yield self._query(**self.kwargs)
         except NoMorePages:
+            print('No more pages!')
             pass
 
     def _query(self, ResponseGroup="Large", **kwargs):
@@ -588,7 +591,7 @@ class AmazonSearch(object):
             else:
                 raise SearchException(
                     "Amazon Search Error: '{0}', '{1}'".format(code, msg))
-        if hasattr(root.Items, 'TotalPages') and root.Items.TotalPages == self.current_page:
+        if hasattr(root.Items, 'TotalPages') and root.Items.TotalPages == kwargs['ItemPage']:
             self.is_last_page = True
         return root
 
